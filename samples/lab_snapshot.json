@@ -1,0 +1,226 @@
+{
+  "metadata": {
+    "tenant": "calab-sample.onmicrosoft.com",
+    "collectedAt": "2026-10-17T18:00:00Z",
+    "source": "synthetic sample mirroring docs/SETUP.md (not real tenant data)"
+  },
+  "conditionalAccessPolicies": [
+    {
+      "id": "11111111-0000-4000-8000-000000000001",
+      "displayName": "CA001 - Require MFA - All users",
+      "createdDateTime": "2026-10-17T15:10:00.1234567Z",
+      "modifiedDateTime": "2026-10-17T15:40:00.1234567Z",
+      "state": "enabled",
+      "conditions": {
+        "userRiskLevels": [],
+        "signInRiskLevels": [],
+        "clientAppTypes": ["all"],
+        "platforms": null,
+        "locations": null,
+        "devices": null,
+        "applications": {
+          "includeApplications": ["All"],
+          "excludeApplications": []
+        },
+        "users": {
+          "includeUsers": ["All"],
+          "excludeUsers": ["aaaaaaaa-0000-4000-8000-000000000099"],
+          "includeGroups": [],
+          "excludeGroups": ["99999999-0000-4000-8000-000000000002"],
+          "includeRoles": [],
+          "excludeRoles": []
+        }
+      },
+      "grantControls": {
+        "operator": "OR",
+        "builtInControls": ["mfa"],
+        "authenticationStrength": null
+      },
+      "sessionControls": null
+    },
+    {
+      "id": "11111111-0000-4000-8000-000000000002",
+      "displayName": "CA002 - Block legacy authentication",
+      "createdDateTime": "2026-10-17T15:12:00Z",
+      "modifiedDateTime": "2026-10-17T15:12:00Z",
+      "state": "enabled",
+      "conditions": {
+        "userRiskLevels": [],
+        "signInRiskLevels": [],
+        "clientAppTypes": ["exchangeActiveSync", "other"],
+        "platforms": null,
+        "locations": null,
+        "devices": null,
+        "applications": {
+          "includeApplications": ["All"],
+          "excludeApplications": []
+        },
+        "users": {
+          "includeUsers": ["All"],
+          "excludeUsers": ["aaaaaaaa-0000-4000-8000-000000000099"],
+          "includeGroups": [],
+          "excludeGroups": [],
+          "includeRoles": [],
+          "excludeRoles": []
+        }
+      },
+      "grantControls": {
+        "operator": "OR",
+        "builtInControls": ["block"],
+        "authenticationStrength": null
+      },
+      "sessionControls": null
+    },
+    {
+      "id": "11111111-0000-4000-8000-000000000100",
+      "displayName": "CA100 - Phishing-resistant MFA - Admins",
+      "createdDateTime": "2026-10-17T15:20:00Z",
+      "modifiedDateTime": "2026-10-17T15:20:00Z",
+      "state": "enabledForReportingButNotEnforced",
+      "conditions": {
+        "userRiskLevels": [],
+        "signInRiskLevels": [],
+        "clientAppTypes": ["all"],
+        "platforms": null,
+        "locations": null,
+        "devices": null,
+        "applications": {
+          "includeApplications": ["All"],
+          "excludeApplications": []
+        },
+        "users": {
+          "includeUsers": [],
+          "excludeUsers": ["aaaaaaaa-0000-4000-8000-000000000099"],
+          "includeGroups": [],
+          "excludeGroups": ["99999999-0000-4000-8000-000000000002"],
+          "includeRoles": ["62e90394-69f5-4237-9190-012177145e10"],
+          "excludeRoles": []
+        }
+      },
+      "grantControls": {
+        "operator": "OR",
+        "builtInControls": [],
+        "authenticationStrength": {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "displayName": "Phishing-resistant MFA"
+        }
+      },
+      "sessionControls": null
+    },
+    {
+      "id": "11111111-0000-4000-8000-000000000101",
+      "displayName": "CA101 - Block high-risk sign-ins",
+      "createdDateTime": "2026-10-17T15:25:00Z",
+      "modifiedDateTime": "2026-10-17T15:25:00Z",
+      "state": "enabledForReportingButNotEnforced",
+      "conditions": {
+        "userRiskLevels": [],
+        "signInRiskLevels": ["high"],
+        "clientAppTypes": ["all"],
+        "platforms": null,
+        "locations": null,
+        "devices": null,
+        "applications": {
+          "includeApplications": ["All"],
+          "excludeApplications": []
+        },
+        "users": {
+          "includeUsers": ["All"],
+          "excludeUsers": ["aaaaaaaa-0000-4000-8000-000000000099"],
+          "includeGroups": [],
+          "excludeGroups": [],
+          "includeRoles": [],
+          "excludeRoles": []
+        }
+      },
+      "grantControls": {
+        "operator": "OR",
+        "builtInControls": ["block"],
+        "authenticationStrength": null
+      },
+      "sessionControls": null
+    },
+    {
+      "id": "11111111-0000-4000-8000-000000000102",
+      "displayName": "CA102 - Require compliant device",
+      "createdDateTime": "2026-10-17T15:30:00Z",
+      "modifiedDateTime": "2026-10-17T15:30:00Z",
+      "state": "enabledForReportingButNotEnforced",
+      "conditions": {
+        "userRiskLevels": [],
+        "signInRiskLevels": [],
+        "clientAppTypes": ["all"],
+        "platforms": null,
+        "locations": null,
+        "devices": null,
+        "applications": {
+          "includeApplications": ["00000003-0000-0ff1-ce00-000000000000"],
+          "excludeApplications": []
+        },
+        "users": {
+          "includeUsers": ["All"],
+          "excludeUsers": ["aaaaaaaa-0000-4000-8000-000000000099"],
+          "includeGroups": [],
+          "excludeGroups": ["99999999-0000-4000-8000-000000000001"],
+          "includeRoles": [],
+          "excludeRoles": []
+        }
+      },
+      "grantControls": {
+        "operator": "OR",
+        "builtInControls": ["compliantDevice"],
+        "authenticationStrength": null
+      },
+      "sessionControls": null
+    },
+    {
+      "id": "11111111-0000-4000-8000-000000000103",
+      "displayName": "CA103 - Old pilot policy",
+      "createdDateTime": "2025-02-03T09:00:00Z",
+      "modifiedDateTime": "2025-03-14T11:30:00Z",
+      "state": "disabled",
+      "conditions": {
+        "userRiskLevels": [],
+        "signInRiskLevels": [],
+        "clientAppTypes": ["all"],
+        "platforms": null,
+        "locations": null,
+        "devices": null,
+        "applications": {
+          "includeApplications": ["All"],
+          "excludeApplications": []
+        },
+        "users": {
+          "includeUsers": ["aaaaaaaa-0000-4000-8000-000000000004"],
+          "excludeUsers": [],
+          "includeGroups": [],
+          "excludeGroups": [],
+          "includeRoles": [],
+          "excludeRoles": []
+        }
+      },
+      "grantControls": {
+        "operator": "OR",
+        "builtInControls": ["mfa"],
+        "authenticationStrength": null
+      },
+      "sessionControls": null
+    }
+  ],
+  "namedLocations": [
+    {
+      "@odata.type": "#microsoft.graph.ipNamedLocation",
+      "id": "22222222-0000-4000-8000-000000000001",
+      "displayName": "Office-HQ",
+      "createdDateTime": "2026-10-17T15:35:00Z",
+      "modifiedDateTime": "2026-10-17T15:35:00Z",
+      "isTrusted": true,
+      "ipRanges": [
+        {
+          "@odata.type": "#microsoft.graph.iPv4CidrRange",
+          "cidrAddress": "20.0.0.0/8"
+        }
+      ]
+    }
+  ]
+}

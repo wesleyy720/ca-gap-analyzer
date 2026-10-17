@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Secrets and local config -- never commit
+.env
+*.env
+token_cache*.json
+
+# Real tenant data and generated reports -- never commit
+exports/
+output/
+reports/
+
+# Editors / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
