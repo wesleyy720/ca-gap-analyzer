@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ca-gap-analyzer"
-version = "0.1.0"
+dynamic = ["version"]  # read from src/ca_gap_analyzer/__init__.py
 description = "Finds security gaps in Microsoft Entra ID Conditional Access configurations."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -26,6 +26,9 @@ ca-gap-analyzer = "ca_gap_analyzer.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.dynamic]
+version = { attr = "ca_gap_analyzer.__version__" }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
