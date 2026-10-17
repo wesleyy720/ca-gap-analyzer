@@ -8,7 +8,10 @@ version = "0.1.0"
 description = "Finds security gaps in Microsoft Entra ID Conditional Access configurations."
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "msal>=1.28",       # Microsoft's sign-in library
+    "requests>=2.31",   # HTTP calls to Microsoft Graph
+]
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]

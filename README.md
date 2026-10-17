@@ -28,6 +28,19 @@ py -3.12 -m venv .venv
 Add `--format json` for machine-readable output. Run the tests with
 `.\.venv\Scripts\python.exe -m pytest`.
 
+## Analyze a live tenant
+
+1. Create the read-only app registration ([docs/SETUP.md](docs/SETUP.md), Phase 2).
+2. Copy `.env.example` to `.env` and fill in your tenant ID and client ID.
+3. Collect and analyze:
+
+```powershell
+.\.venv\Scripts\ca-gap-analyzer.exe collect --analyze
+```
+
+A browser window opens for sign-in. Use a Global Reader or Security Reader account. The snapshot
+is saved to `exports/` (git-ignored), and you can re-analyze it later without signing in again.
+
 ## Docs
 
 - [Tenant setup guide](docs/SETUP.md): build a safe lab tenant and a read-only app registration
@@ -37,6 +50,7 @@ Add `--format json` for machine-readable output. Run the tests with
 ## Security model
 
 - **Read-only.** Uses delegated Microsoft Graph read permissions only.
-- **No secrets.** Public client sign-in (interactive or device code), with no client secret to leak.
+- **No secrets.** Public client, interactive browser sign-in, with no client secret to leak. No
+  device code flow, so it works in tenants that block device code phishing.
 - **Least privilege.** Intended to run as a Global Reader or Security Reader account.
 - **No tenant data in git.** Exports and reports are git-ignored; sample data is synthetic.

@@ -142,7 +142,9 @@ Reader) is allowed to read.
   - Supported account types: **Single tenant**
   - Redirect URI: platform **Public client/native (mobile & desktop)**, value `http://localhost`
 - [ ] On the app's **Overview** page, copy the **Application (client) ID**.
-- [ ] **Authentication**: set **Allow public client flows** to **Yes** (enables device code sign-in).
+- [ ] **Authentication**: leave **Allow public client flows** at **No**. The tool signs in through
+      the browser, which doesn't need it. That toggle enables device code and password-based
+      flows, which the tool deliberately doesn't use (see check CA-09).
 - [ ] **API permissions > + Add a permission > Microsoft Graph > Delegated permissions**, add:
   - `Policy.Read.All` (Conditional Access policies and named locations)
   - `Directory.Read.All` (users, groups, and memberships)

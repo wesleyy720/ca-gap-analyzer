@@ -14,9 +14,13 @@ committed.
 - [x] Unit tests for every check (each check gets "passes" and "fails" cases)
 
 ## M2: Live collection from Graph
-- [ ] Sign-in with MSAL (interactive browser, with device code as a fallback)
-- [ ] `collect` command: pull policies, named locations, roles, and groups, then save a snapshot to `exports/`
-- [ ] `analyze` command runs against any snapshot, live or sample
+- [x] Sign-in with MSAL (interactive browser only; no device code, per CA-09)
+- [x] `.env` settings with clear errors for missing or placeholder values
+- [x] Graph client with paging and throttling (429) retries
+- [x] `collect` command: pull policies and named locations, then save a snapshot to `exports/`
+- [x] `analyze` command runs against any snapshot, live or sample (`collect --analyze` does both)
+- [ ] First run against the live lab tenant
+- Roles and groups move to M3, which needs them (and their extra read scopes) for enrichment
 
 ## M3: Identity enrichment
 - [ ] Resolve GUIDs to names (users, groups, roles, apps)

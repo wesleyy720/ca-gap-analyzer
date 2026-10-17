@@ -3,6 +3,8 @@
 Usage:
     ca-gap-analyzer analyze samples/lab_snapshot.json
     ca-gap-analyzer analyze samples/lab_snapshot.json --format json
+    ca-gap-analyzer collect                 # sign in, save a snapshot to exports/
+    ca-gap-analyzer collect --analyze       # ...and analyze it straight away
 """
 
 import argparse
@@ -12,10 +14,11 @@ import textwrap
 from dataclasses import dataclass
 from pathlib import Path
 
-from . import __version__
+from . import __version__, auth, collect, graph
 from .checks import ALL_CHECKS
+from .config import ConfigError, load_settings
 from .findings import Finding, Severity
-from .snapshot import Snapshot, load_snapshot
+from .snapshot import Snapshot, load_snapshot, snapshot_from_dict
 
 WIDTH = 100
 
@@ -100,8 +103,18 @@ def main(argv: list[str] | None = None) -> int:
     analyze.add_argument("snapshot", type=Path, help="path to a snapshot JSON file")
     analyze.add_argument("--format", choices=["text", "json"], default="text", help="output format")
 
-    args = parser.parse_args(argv)
+    collect_cmd = commands.add_parser("collect", help="sign in and save a snapshot of a live tenant")
+    collect_cmd.add_argument("--output", type=Path, help="where to save (default: exports/snapshot-<time>.json)")
+    collect_cmd.add_argument("--env-file", type=Path, default=Path(".env"), help="settings file (default: .env)")
+    collect_cmd.add_argument("--analyze", action="store_true", help="analyze the snapshot right after collecting")
 
+    args = parser.parse_args(argv)
+    if args.command == "collect":
+        return run_collect(args)
+    return run_analyze(args)
+
+
+def run_analyze(args) -> int:
     try:
         snapshot = load_snapshot(args.snapshot)
     except FileNotFoundError:
@@ -116,4 +129,31 @@ def main(argv: list[str] | None = None) -> int:
         print_json_report(snapshot, results)
     else:
         print_text_report(snapshot, args.snapshot, results)
+    return 0
+
+
+def run_collect(args) -> int:
+    try:
+        settings = load_settings(args.env_file)
+        signed_in = auth.sign_in(settings.tenant_id, settings.client_id)
+        print(f"Signed in as {signed_in.username}. Reading Conditional Access configuration...")
+        client = graph.GraphClient(signed_in.access_token)
+        data = collect.collect_snapshot(client, signed_in.username, signed_in.tenant_id)
+    except (ConfigError, auth.AuthError, graph.GraphError) as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    output = args.output or collect.default_output_path()
+    collect.save_snapshot(data, output)
+    print(
+        f"Saved {len(data['conditionalAccessPolicies'])} policies and "
+        f"{len(data['namedLocations'])} named locations to {output}"
+    )
+
+    if args.analyze:
+        print()
+        snapshot = snapshot_from_dict(data)
+        print_text_report(snapshot, output, run_checks(snapshot))
+    else:
+        print(f"Next: ca-gap-analyzer analyze {output}")
     return 0
