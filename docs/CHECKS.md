@@ -4,6 +4,15 @@ This is the heart of the tool, and it's the part **you** own as the domain exper
 change severities, add checks, or reword the reasoning. The code implements whatever this file
 says.
 
+**Privileged users** are holders of the roles listed in `src/ca_gap_analyzer/privileged.py`
+(Global Admin, Privileged Role Admin, Security Admin, Exchange Admin, and so on): assigned
+directly, through a role-assignable group, or PIM eligible.
+
+**Break-glass accounts** are expected to be excluded, so CA-02 and CA-04 skip them. List them in
+`CA_BREAK_GLASS` in `.env`. If that's not set, the tool guesses from accounts excluded *directly*
+from every enforced policy, preferring names like "breakglass" or "emergency", and labels the
+result as a guess.
+
 "Enforcing policy" means a policy with `state: enabled`. Report-only (`enabledForReportingButNotEnforced`)
 and disabled policies don't protect anything.
 
@@ -13,12 +22,12 @@ and disabled policies don't protect anything.
 | CA-02 | Privileged roles not covered by phishing-resistant MFA | Critical | CA100 |
 | CA-03 | Legacy authentication not blocked | High | (passes thanks to CA002) |
 | CA-04 | Privileged users excluded from enforcing policies | High | CA001 excludes `CA-Exclusions-Temp` (carol) |
-| CA-05 | Broad exclusions that cover most users | Medium | CA102 |
+| CA-05 | Broad exclusions (5+ users and more than 25% of the tenant) | Medium | CA102 |
 | CA-06 | Policies stuck in report-only or disabled | Low / Medium | CA100–CA103 |
 | CA-07 | No sign-in risk or user risk policy enforced | Medium | CA101 |
 | CA-08 | Trusted named location with an over-broad IP range | High | `Office-HQ` |
 | CA-09 | Device code flow not restricted | Medium | (no policy, so it triggers) |
-| CA-10 | No break-glass account consistently excluded | Medium | (passes) |
+| CA-10 | Break-glass accounts missing, not excluded everywhere, or fewer than two | Low / Medium | CA100 (no exclusions); only one account |
 | CA-11 | Guests and external users not covered by MFA | Medium | depends on CA001 scope |
 | CA-12 | No sign-in frequency or session controls for admins | Low | (triggers) |
 

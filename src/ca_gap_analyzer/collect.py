@@ -125,6 +125,13 @@ def collect_snapshot(client, username: str, tenant_id: str, now: datetime | None
         for sp in client.get_all(f"/servicePrincipals?$filter=appId eq '{app_id}'&$select=id,appId,displayName"):
             objects.setdefault(sp["id"], slim(sp))
 
+    # 6. How many users the tenant has, so exclusions can be judged as a share of everyone
+    try:
+        user_count = client.count("/users/$count")
+    except (GraphError, ValueError):
+        user_count = None
+        warnings.append("Couldn't count the tenant's users, so broad-exclusion checks are limited.")
+
     # Show the tenant's domain (from ca-auditor@contoso.onmicrosoft.com) rather than a bare GUID.
     tenant = username.split("@", 1)[1] if "@" in username else tenant_id
     return {
@@ -135,6 +142,7 @@ def collect_snapshot(client, username: str, tenant_id: str, now: datetime | None
             "collectedBy": username,
             "source": "Microsoft Graph v1.0",
             "tool": f"ca-gap-analyzer {__version__}",
+            "userCount": user_count,
             "warnings": warnings,
         },
         "conditionalAccessPolicies": raw_policies,

@@ -80,6 +80,11 @@ class FakeGraphClient:
     def get_by_ids(self, ids, types):
         return [self.objects[i] for i in ids if i in self.objects]
 
+    def count(self, path):
+        if path in self.fail:
+            raise self.fail[path]
+        return 7
+
 
 def collect(client=None):
     return collect_snapshot(client or FakeGraphClient(), "ca-auditor@lab.onmicrosoft.com", TENANT, now=NOW)
@@ -109,6 +114,17 @@ def test_resolves_names_and_expands_groups():
 def test_keeps_only_needed_fields():
     objects = collect()["directoryObjects"]
     assert all("mobilePhone" not in o for o in objects)
+
+
+def test_records_user_count():
+    assert collect()["metadata"]["userCount"] == 7
+
+
+def test_user_count_failure_becomes_a_warning():
+    client = FakeGraphClient(fail={"/users/$count": GraphError("forbidden", status=403)})
+    snap = collect(client)
+    assert snap["metadata"]["userCount"] is None
+    assert "count" in snap["metadata"]["warnings"][0]
 
 
 def test_missing_pim_access_becomes_a_warning():

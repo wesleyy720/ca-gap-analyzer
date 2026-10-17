@@ -15,6 +15,9 @@ ENABLED = "enabled"
 REPORT_ONLY = "enabledForReportingButNotEnforced"
 DISABLED = "disabled"
 
+# Built-in "Phishing-resistant MFA" authentication strength (same ID in every tenant)
+PHISHING_RESISTANT_STRENGTH_ID = "00000000-0000-0000-0000-000000000004"
+
 
 class Policy:
     def __init__(self, raw: dict):
@@ -111,6 +114,22 @@ class Policy:
         return "all" in self.client_app_types
 
     @property
+    def risk_levels(self) -> list[str]:
+        c = self._conditions
+        return (c.get("signInRiskLevels") or []) + (c.get("userRiskLevels") or [])
+
+    @property
+    def authentication_flows(self) -> list[str]:
+        """e.g. ["deviceCodeFlow", "authenticationTransfer"]. Graph sends a comma-separated string."""
+        flows = (self._conditions.get("authenticationFlows") or {}).get("transferMethods") or ""
+        return [f.strip() for f in flows.split(",") if f.strip()]
+
+    @property
+    def excludes_guests(self) -> bool:
+        return ("GuestsOrExternalUsers" in self.exclude_users
+                or bool(self._users.get("excludeGuestsOrExternalUsers")))
+
+    @property
     def narrowing_conditions(self) -> list[str]:
         """Conditions that make the policy apply to only *some* sign-ins.
 
@@ -158,6 +177,17 @@ class Policy:
     def authentication_strength(self) -> str | None:
         strength = self._grant.get("authenticationStrength")
         return strength.get("displayName") if strength else None
+
+    @property
+    def requires_phishing_resistant_mfa(self) -> bool:
+        strength = self._grant.get("authenticationStrength") or {}
+        return (strength.get("id") == PHISHING_RESISTANT_STRENGTH_ID
+                or "phishing" in (strength.get("displayName") or "").lower())
+
+    @property
+    def sign_in_frequency(self) -> dict | None:
+        freq = (self.raw.get("sessionControls") or {}).get("signInFrequency") or {}
+        return freq if freq.get("isEnabled") else None
 
     @property
     def blocks(self) -> bool:

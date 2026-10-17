@@ -65,9 +65,35 @@ def make_location(name="Office", cidrs=("203.0.113.0/29",), trusted=True):
     }
 
 
-def make_snapshot(policies=(), locations=()) -> Snapshot:
-    return snapshot_from_dict({
-        "metadata": {"tenant": "test.onmicrosoft.com", "collectedAt": COLLECTED_AT},
+def make_snapshot(policies=(), locations=(), users=(), groups=None, roles=None,
+                  eligible=None, user_count=None, break_glass=None) -> Snapshot:
+    """Build a snapshot. For identity tests:
+        users=["alice", ...]             user objects with id == name
+        groups={"g-admins": ["alice"]}   group id -> member user ids
+        roles={"alice": GA}              user/group id -> role template ID (active)
+        eligible={"bob": GA}             same, but PIM eligible
+        break_glass=["bg"]               like CA_BREAK_GLASS
+    """
+    groups = groups or {}
+    objects = [{"@odata.type": "#microsoft.graph.user", "id": u, "displayName": u,
+                "userPrincipalName": f"{u}@test.onmicrosoft.com"} for u in users]
+    objects += [{"@odata.type": "#microsoft.graph.group", "id": g, "displayName": g} for g in groups]
+    snapshot = snapshot_from_dict({
+        "metadata": {"tenant": "test.onmicrosoft.com", "collectedAt": COLLECTED_AT, "userCount": user_count},
         "conditionalAccessPolicies": list(policies),
         "namedLocations": list(locations),
+        "roleDefinitions": [{"id": r, "templateId": r, "displayName": n} for r, n in ROLE_NAMES.items()],
+        "roleAssignments": [{"principalId": p, "roleDefinitionId": r} for p, r in (roles or {}).items()],
+        "roleEligibilities": [{"principalId": p, "roleDefinitionId": r} for p, r in (eligible or {}).items()],
+        "groupMembers": groups,
+        "directoryObjects": objects,
     })
+    snapshot.break_glass_entries = break_glass
+    return snapshot
+
+
+GA = "62e90394-69f5-4237-9190-012177145e10"
+HELPDESK = "729827e3-9c14-49f7-bb1b-9608f156bbb8"
+GLOBAL_READER = "f2ef992c-3afb-46b9-b7cf-a126ee74c451"
+ROLE_NAMES = {GA: "Global Administrator", HELPDESK: "Helpdesk Administrator", GLOBAL_READER: "Global Reader"}
+PHISHING_RESISTANT = {"id": "00000000-0000-0000-0000-000000000004", "displayName": "Phishing-resistant MFA"}

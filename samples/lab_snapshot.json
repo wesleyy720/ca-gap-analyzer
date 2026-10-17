@@ -3,6 +3,7 @@
     "tenant": "calab-sample.onmicrosoft.com",
     "collectedAt": "2026-10-17T18:00:00Z",
     "source": "synthetic sample mirroring docs/SETUP.md (not real tenant data)",
+    "userCount": 9,
     "warnings": []
   },
   "conditionalAccessPolicies": [

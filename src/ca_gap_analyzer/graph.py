@@ -67,19 +67,28 @@ class GraphClient:
             found.extend(data.get("value", []))
         return found
 
+    def count(self, path: str) -> int:
+        """GET a $count endpoint, e.g. /users/$count. Graph requires an extra header for these."""
+        response = self._send("GET", BASE_URL + path, extra_headers={"ConsistencyLevel": "eventual"})
+        return int(response.text.strip().lstrip("﻿"))
+
     def _request(self, method: str, url: str, body: dict | None = None) -> dict:
+        return self._send(method, url, body).json()
+
+    def _send(self, method: str, url: str, body: dict | None = None, extra_headers: dict | None = None):
+        headers = {**self._headers, **(extra_headers or {})}
         for attempt in range(self._max_retries + 1):
             if method == "POST":
-                response = self._session.post(url, headers=self._headers, json=body, timeout=30)
+                response = self._session.post(url, headers=headers, json=body, timeout=30)
             else:
-                response = self._session.get(url, headers=self._headers, timeout=30)
+                response = self._session.get(url, headers=headers, timeout=30)
 
             if response.status_code in RETRY_STATUSES and attempt < self._max_retries:
                 self._sleep(self._retry_delay(response, attempt))
                 continue
             if response.status_code >= 400:
                 raise GraphError(describe_error(response, url), status=response.status_code)
-            return response.json()
+            return response
 
         raise GraphError(f"Gave up on {url} after {self._max_retries} retries")  # pragma: no cover
 

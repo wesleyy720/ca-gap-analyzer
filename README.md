@@ -38,7 +38,9 @@ Run the tests with
 ## Analyze a live tenant
 
 1. Create the read-only app registration ([docs/SETUP.md](docs/SETUP.md), Phase 2).
-2. Copy `.env.example` to `.env` and fill in your tenant ID and client ID.
+2. Copy `.env.example` to `.env` and fill in your tenant ID and client ID. Optionally list your
+   break-glass accounts in `CA_BREAK_GLASS`, so the identity checks know those exclusions are
+   intentional.
 3. Collect and analyze:
 
 ```powershell

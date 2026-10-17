@@ -15,9 +15,9 @@ import textwrap
 from dataclasses import dataclass
 from pathlib import Path
 
-from . import __version__, auth, collect, graph
+from . import __version__, auth, breakglass, collect, graph
 from .checks import ALL_CHECKS
-from .config import ConfigError, load_settings
+from .config import ConfigError, load_break_glass, load_settings
 from .findings import Finding, Severity
 from .snapshot import Snapshot, load_snapshot, snapshot_from_dict
 from .summary import print_policy_summary
@@ -30,14 +30,25 @@ class CheckResult:
     check_id: str
     title: str
     findings: list[Finding]
+    skipped: bool = False   # needed directory data the snapshot doesn't have
 
     @property
     def passed(self) -> bool:
-        return not self.findings
+        return not self.skipped and not self.findings
+
+    @property
+    def status(self) -> str:
+        return "SKIP" if self.skipped else ("PASS" if self.passed else "FAIL")
 
 
 def run_checks(snapshot: Snapshot) -> list[CheckResult]:
-    return [CheckResult(c.CHECK_ID, c.TITLE, c.run(snapshot)) for c in ALL_CHECKS]
+    results = []
+    for check in ALL_CHECKS:
+        if getattr(check, "REQUIRES_DIRECTORY", False) and snapshot.directory.is_empty:
+            results.append(CheckResult(check.CHECK_ID, check.TITLE, [], skipped=True))
+        else:
+            results.append(CheckResult(check.CHECK_ID, check.TITLE, check.run(snapshot)))
+    return results
 
 
 def print_text_report(snapshot: Snapshot, source: Path, results: list[CheckResult]) -> None:
@@ -51,13 +62,13 @@ def print_text_report(snapshot: Snapshot, source: Path, results: list[CheckResul
     else:
         print(f"Directory: {len(d.objects)} users/groups/apps resolved, "
               f"{len(d.role_assignments)} active and {len(d.role_eligibilities)} eligible role assignments")
+        print(f"Break-glass: {breakglass.resolve(snapshot).note(snapshot)}")
     for warning in snapshot.warnings:
         print(f"Warning:  {warning}")
 
     print("\nChecks")
     for r in results:
-        status = "PASS" if r.passed else "FAIL"
-        print(f"  {status}  {r.check_id}  {r.title}")
+        print(f"  {r.status}  {r.check_id}  {r.title}")
 
     findings = sorted(
         (f for r in results for f in r.findings),
@@ -74,12 +85,15 @@ def print_text_report(snapshot: Snapshot, source: Path, results: list[CheckResul
         print(textwrap.fill("Fix: " + f.remediation, WIDTH, initial_indent=indent, subsequent_indent=indent))
 
     passed = sum(r.passed for r in results)
+    skipped = sum(r.skipped for r in results)
     counts = ", ".join(
         f"{sum(f.severity == s for f in findings)} {s.name.lower()}"
         for s in sorted(Severity, reverse=True)
         if any(f.severity == s for f in findings)
     )
-    print(f"\nSummary: {passed} of {len(results)} checks passed." + (f" Findings: {counts}." if counts else ""))
+    summary = f"\nSummary: {passed} of {len(results)} checks passed"
+    summary += f" ({skipped} skipped: re-run collect for identity data)." if skipped else "."
+    print(summary + (f" Findings: {counts}." if counts else ""))
 
 
 def print_json_report(snapshot: Snapshot, results: list[CheckResult]) -> None:
@@ -93,6 +107,7 @@ def print_json_report(snapshot: Snapshot, results: list[CheckResult]) -> None:
                 "id": r.check_id,
                 "title": r.title,
                 "passed": r.passed,
+                "skipped": r.skipped,
                 "findings": [f.to_dict() for f in r.findings],
             }
             for r in results
@@ -114,6 +129,8 @@ def main(argv: list[str] | None = None) -> int:
     analyze = commands.add_parser("analyze", help="run all checks against a snapshot file")
     analyze.add_argument("snapshot", type=Path, nargs="?", help=snapshot_help)
     analyze.add_argument("--format", choices=["text", "json"], default="text", help="output format")
+    analyze.add_argument("--env-file", type=Path, default=Path(".env"),
+                         help="settings file to read CA_BREAK_GLASS from (default: .env)")
 
     policies_cmd = commands.add_parser("policies", help="describe each policy in plain English")
     policies_cmd.add_argument("snapshot", type=Path, nargs="?", help=snapshot_help)
@@ -173,6 +190,7 @@ def run_analyze(args) -> int:
     snapshot, path = open_snapshot(args.snapshot)
     if snapshot is None:
         return 2
+    snapshot.break_glass_entries = load_break_glass(args.env_file)
 
     results = run_checks(snapshot)
     if args.format == "json":
@@ -203,6 +221,7 @@ def run_collect(args) -> int:
     if args.analyze:
         print()
         snapshot = snapshot_from_dict(data)
+        snapshot.break_glass_entries = load_break_glass(args.env_file)
         print_text_report(snapshot, output, run_checks(snapshot))
     else:
         print(f"Next: ca-gap-analyzer analyze {output}")

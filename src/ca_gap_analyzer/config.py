@@ -37,6 +37,13 @@ def read_env_file(path: Path) -> dict[str, str]:
     return values
 
 
+def load_break_glass(env_file: Path = Path(".env"), environ=os.environ) -> list[str] | None:
+    """CA_BREAK_GLASS: comma-separated UPNs or object IDs. None if not set (the tool will guess)."""
+    value = environ.get("CA_BREAK_GLASS") or read_env_file(env_file).get("CA_BREAK_GLASS", "")
+    entries = [e.strip() for e in value.replace(";", ",").split(",") if e.strip()]
+    return entries or None
+
+
 def load_settings(env_file: Path = Path(".env"), environ=os.environ) -> Settings:
     values = read_env_file(env_file)
     values.update({k: environ[k] for k in KEYS if environ.get(k)})

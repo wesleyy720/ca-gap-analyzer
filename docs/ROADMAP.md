@@ -22,17 +22,20 @@ committed.
 - [x] First run against the live lab tenant (2026-10-17: found every planted CA-06 and CA-08 gap)
 - Roles and groups move to M3, which needs them (and their extra read scopes) for enrichment
 
-## M3: Identity enrichment
+## M3: Identity enrichment ✅
 **Part A: collect and resolve identities**
 - [x] Collect role definitions, active role assignments, and PIM eligible assignments
 - [x] Resolve GUIDs to names (users, groups, roles, apps), for referenced objects only
 - [x] Expand referenced groups to their transitive (nested) members
 - [x] `policies` command: each policy in plain English, exclusion groups shown with members
-- [ ] Live run against the lab tenant
+- [x] Live run against the lab tenant (revealed a Global Admin excluded from MFA and legacy-auth blocking)
 
 **Part B: identity checks**
-- [ ] CA-02 (admins without phishing-resistant MFA), CA-04 (privileged users excluded), CA-05 (broad exclusions)
-- [ ] CA-10, CA-11, CA-12, and the remaining catalog checks
+- [x] CA-02 (admins without phishing-resistant MFA), CA-04 (privileged users excluded), CA-05 (broad exclusions)
+- [x] CA-07, CA-09, CA-10, CA-11, CA-12: all 12 catalog checks implemented
+- [x] Break-glass accounts: designated via `CA_BREAK_GLASS`, or guessed (and labeled as a guess)
+- [x] Older snapshots without directory data still run; identity checks show as SKIP
+- [ ] Live run against the lab tenant with `CA_BREAK_GLASS` set
 
 ## M4: Report
 - [ ] HTML report: executive summary, severity counts, per-finding detail and fix
