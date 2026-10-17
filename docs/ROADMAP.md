@@ -13,13 +13,13 @@ committed.
 - [x] Console output (text and JSON) with severity
 - [x] Unit tests for every check (each check gets "passes" and "fails" cases)
 
-## M2: Live collection from Graph
+## M2: Live collection from Graph ✅
 - [x] Sign-in with MSAL (interactive browser only; no device code, per CA-09)
 - [x] `.env` settings with clear errors for missing or placeholder values
 - [x] Graph client with paging and throttling (429) retries
 - [x] `collect` command: pull policies and named locations, then save a snapshot to `exports/`
 - [x] `analyze` command runs against any snapshot, live or sample (`collect --analyze` does both)
-- [ ] First run against the live lab tenant
+- [x] First run against the live lab tenant (2026-10-17: found every planted CA-06 and CA-08 gap)
 - Roles and groups move to M3, which needs them (and their extra read scopes) for enrichment
 
 ## M3: Identity enrichment

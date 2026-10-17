@@ -5,12 +5,24 @@ left that way for a long time is more likely forgotten than mid-rollout, so it r
 """
 
 from ..findings import Finding, Severity
+from ..policy import REPORT_ONLY
 from ..snapshot import Snapshot
 
 CHECK_ID = "CA-06"
 TITLE = "All policies are enforced"
 
 STALE_AFTER_DAYS = 30
+
+REPORT_ONLY_FIX = (
+    "Review what it would have done: Sign-in logs > a sign-in > Report-only tab, or the "
+    "Conditional Access Insights workbook. If the impact is acceptable, turn it On. If it's no "
+    "longer needed, delete it so reviewers don't mistake it for protection."
+)
+DISABLED_FIX = (
+    "Decide whether it's still needed. If so, switch it to Report-only first to check the "
+    "impact, then turn it On. If not, delete it so it doesn't clutter reviews or get re-enabled "
+    "by mistake."
+)
 
 
 def run(snapshot: Snapshot) -> list[Finding]:
@@ -36,11 +48,7 @@ def run(snapshot: Snapshot) -> list[Finding]:
                 f"'{p.name}' is {p.state_label}, so it doesn't block or require anything. {age_text}"
                 + (f" Unchanged for {STALE_AFTER_DAYS}+ days, so it's likely forgotten." if stale else "")
             ),
-            remediation=(
-                "If it's mid-rollout, check its Report-only results in the sign-in logs and then "
-                "turn it On. If it's no longer needed, delete it so reviewers don't mistake it for "
-                "protection."
-            ),
+            remediation=REPORT_ONLY_FIX if p.state == REPORT_ONLY else DISABLED_FIX,
             affected=[p.name],
         ))
     return findings

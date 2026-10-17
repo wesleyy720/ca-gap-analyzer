@@ -32,6 +32,16 @@ def test_one_finding_per_unenforced_policy():
     assert [f.affected for f in findings] == [["A"], ["B"]]
 
 
+def test_fix_text_matches_policy_state():
+    policies = [
+        make_policy(name="Off", state="disabled"),
+        make_policy(name="Report", state="enabledForReportingButNotEnforced"),
+    ]
+    off, report = check.run(make_snapshot(policies))
+    assert "Report-only tab" not in off.remediation
+    assert "Report-only tab" in report.remediation
+
+
 def test_handles_graph_seven_digit_fractional_seconds():
     policy = make_policy(state="disabled", modified="2026-01-01T00:00:00.1234567Z")
     assert len(check.run(make_snapshot([policy]))) == 1
