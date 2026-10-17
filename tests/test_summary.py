@@ -47,6 +47,31 @@ def test_policies_command(capsys):
     assert out.index("CA001") < out.index("CA103")  # sorted by name
 
 
+def test_bad_path_characters_give_a_friendly_error(capsys):
+    assert main(["policies", "exports/snapshot-<time>.json"]) == 2
+    assert "error:" in capsys.readouterr().err
+
+
+def test_defaults_to_newest_snapshot(tmp_path, monkeypatch, capsys):
+    exports = tmp_path / "exports"
+    exports.mkdir()
+    sample = SAMPLE.read_text(encoding="utf-8")
+    (exports / "snapshot-20260101-000000.json").write_text('{"metadata": {"tenant": "old"}}', encoding="utf-8")
+    (exports / "snapshot-20261017-120000.json").write_text(sample, encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+
+    assert main(["policies"]) == 0
+    captured = capsys.readouterr()
+    assert "snapshot-20261017-120000.json" in captured.err
+    assert "calab-sample.onmicrosoft.com" in captured.out
+
+
+def test_no_snapshots_yet(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    assert main(["analyze"]) == 2
+    assert "Run `ca-gap-analyzer collect` first" in capsys.readouterr().err
+
+
 def test_policies_command_on_old_snapshot_explains_missing_names(tmp_path, capsys):
     old = tmp_path / "old.json"
     old.write_text('{"conditionalAccessPolicies": [], "namedLocations": []}', encoding="utf-8")

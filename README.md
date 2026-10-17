@@ -47,6 +47,11 @@ Run the tests with
 
 A browser window opens for sign-in. Use a Global Reader or Security Reader account. The snapshot
 is saved to `exports/` (git-ignored), and you can re-analyze it later without signing in again.
+With no path, `analyze` and `policies` use the newest snapshot in `exports/`:
+
+```powershell
+.\.venv\Scripts\ca-gap-analyzer.exe policies
+```
 
 ## Docs
 

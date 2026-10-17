@@ -109,12 +109,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     commands = parser.add_subparsers(dest="command", required=True)
 
+    snapshot_help = "path to a snapshot JSON file (default: the newest one in exports/)"
+
     analyze = commands.add_parser("analyze", help="run all checks against a snapshot file")
-    analyze.add_argument("snapshot", type=Path, help="path to a snapshot JSON file")
+    analyze.add_argument("snapshot", type=Path, nargs="?", help=snapshot_help)
     analyze.add_argument("--format", choices=["text", "json"], default="text", help="output format")
 
     policies_cmd = commands.add_parser("policies", help="describe each policy in plain English")
-    policies_cmd.add_argument("snapshot", type=Path, help="path to a snapshot JSON file")
+    policies_cmd.add_argument("snapshot", type=Path, nargs="?", help=snapshot_help)
 
     collect_cmd = commands.add_parser("collect", help="sign in and save a snapshot of a live tenant")
     collect_cmd.add_argument("--output", type=Path, help="where to save (default: exports/snapshot-<time>.json)")
@@ -129,19 +131,38 @@ def main(argv: list[str] | None = None) -> int:
     return run_analyze(args)
 
 
-def open_snapshot(path: Path) -> Snapshot | None:
-    """Load a snapshot, printing a friendly error (and returning None) if it can't be read."""
+def newest_snapshot(folder: Path = collect.EXPORTS_DIR) -> Path | None:
+    # Names are snapshot-YYYYMMDD-HHMMSS.json, so sorting by name sorts by time.
+    found = sorted(folder.glob("snapshot-*.json"))
+    return found[-1] if found else None
+
+
+def open_snapshot(path: Path | None) -> tuple[Snapshot | None, Path | None]:
+    """Load a snapshot (the newest in exports/ if no path given).
+
+    Prints a friendly error and returns (None, path) if it can't be read.
+    """
+    if path is None:
+        path = newest_snapshot()
+        if path is None:
+            print(f"error: no snapshots in {collect.EXPORTS_DIR}/. Run `ca-gap-analyzer collect` "
+                  "first, or give a snapshot path.", file=sys.stderr)
+            return None, None
+        print(f"Using newest snapshot: {path}\n", file=sys.stderr)
     try:
-        return load_snapshot(path)
+        return load_snapshot(path), path
     except FileNotFoundError:
         print(f"error: snapshot file not found: {path}", file=sys.stderr)
     except json.JSONDecodeError as e:
         print(f"error: {path} is not valid JSON ({e})", file=sys.stderr)
-    return None
+    except OSError as e:
+        # e.g. a path with characters Windows doesn't allow, like < >
+        print(f"error: can't open {path}: {e.strerror or e}", file=sys.stderr)
+    return None, path
 
 
 def run_policies(args) -> int:
-    snapshot = open_snapshot(args.snapshot)
+    snapshot, _ = open_snapshot(args.snapshot)
     if snapshot is None:
         return 2
     print_policy_summary(snapshot)
@@ -149,7 +170,7 @@ def run_policies(args) -> int:
 
 
 def run_analyze(args) -> int:
-    snapshot = open_snapshot(args.snapshot)
+    snapshot, path = open_snapshot(args.snapshot)
     if snapshot is None:
         return 2
 
@@ -157,7 +178,7 @@ def run_analyze(args) -> int:
     if args.format == "json":
         print_json_report(snapshot, results)
     else:
-        print_text_report(snapshot, args.snapshot, results)
+        print_text_report(snapshot, path, results)
     return 0
 
 
