@@ -36,6 +36,7 @@ class Snapshot:
     directory: Directory = field(default_factory=Directory)
     warnings: list[str] = field(default_factory=list)
     user_count: int | None = None   # total users in the tenant, for "how broad is this exclusion?"
+    collected_by: str | None = None
     # Break-glass accounts named in CA_BREAK_GLASS (UPNs or IDs). None means "not set; guess".
     break_glass_entries: list[str] | None = None
 
@@ -63,4 +64,5 @@ def snapshot_from_dict(data: dict) -> Snapshot:
         ),
         warnings=metadata.get("warnings", []),
         user_count=metadata.get("userCount"),
+        collected_by=metadata.get("collectedBy"),
     )

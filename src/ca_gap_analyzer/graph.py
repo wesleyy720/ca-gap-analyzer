@@ -67,10 +67,16 @@ class GraphClient:
             found.extend(data.get("value", []))
         return found
 
-    def count(self, path: str) -> int:
-        """GET a $count endpoint, e.g. /users/$count. Graph requires an extra header for these."""
-        response = self._send("GET", BASE_URL + path, extra_headers={"ConsistencyLevel": "eventual"})
-        return int(response.text.strip().lstrip("﻿"))
+    def count(self, collection: str) -> int:
+        """Count a collection, e.g. count("/users").
+
+        Asks for one item plus "@odata.count" rather than calling /users/$count, which answers
+        in plain text and conflicts with our JSON Accept header. Graph only supports $count
+        with the ConsistencyLevel: eventual header.
+        """
+        url = f"{BASE_URL}{collection}?$count=true&$top=1&$select=id"
+        data = self._send("GET", url, extra_headers={"ConsistencyLevel": "eventual"}).json()
+        return int(data["@odata.count"])
 
     def _request(self, method: str, url: str, body: dict | None = None) -> dict:
         return self._send(method, url, body).json()

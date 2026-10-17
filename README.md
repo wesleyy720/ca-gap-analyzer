@@ -49,6 +49,18 @@ Run the tests with
 
 A browser window opens for sign-in. Use a Global Reader or Security Reader account. The snapshot
 is saved to `exports/` (git-ignored), and you can re-analyze it later without signing in again.
+
+## HTML report
+
+```powershell
+.\.venv\Scripts\ca-gap-analyzer.exe report --open
+```
+
+Writes a single self-contained HTML file to `reports/` (git-ignored): an executive summary,
+severity counts, every finding with its fix and MITRE ATT&CK techniques, and a KQL hunting
+query per finding for Microsoft Sentinel or Log Analytics ("has this gap already been used?"),
+pre-filled with the affected users, policies, or IP ranges. An appendix describes every policy
+in plain English. Use `collect --report` to collect and report in one step.
 With no path, `analyze` and `policies` use the newest snapshot in `exports/`:
 
 ```powershell

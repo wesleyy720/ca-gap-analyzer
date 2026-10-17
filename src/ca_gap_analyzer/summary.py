@@ -99,6 +99,13 @@ def _session(policy: Policy) -> str | None:
 
 
 def describe_policy(policy: Policy, snapshot: Snapshot) -> list[str]:
+    lines = [f"{policy.name}  [{policy.state_label}]"]
+    lines += [f"  {label + ':':<{LABEL_WIDTH}}{value}" for label, value in policy_rows(policy, snapshot)]
+    return lines
+
+
+def policy_rows(policy: Policy, snapshot: Snapshot) -> list[tuple[str, str]]:
+    """(label, value) pairs describing a policy. Used by the console and the HTML report."""
     d = snapshot.directory
     rows = []
 
@@ -120,10 +127,7 @@ def describe_policy(policy: Policy, snapshot: Snapshot) -> list[str]:
     session = _session(policy)
     if session:
         rows.append(("Session", session))
-
-    lines = [f"{policy.name}  [{policy.state_label}]"]
-    lines += [f"  {label + ':':<{LABEL_WIDTH}}{value}" for label, value in rows]
-    return lines
+    return rows
 
 
 def print_policy_summary(snapshot: Snapshot) -> None:

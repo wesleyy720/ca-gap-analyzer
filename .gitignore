@@ -18,8 +18,9 @@ exports/
 output/
 reports/
 
-# Editors / OS
+# Editors / OS / local tooling
 .vscode/
 .idea/
+.claude/
 Thumbs.db
 .DS_Store
