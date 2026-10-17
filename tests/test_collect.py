@@ -121,10 +121,10 @@ def test_records_user_count():
 
 
 def test_user_count_failure_becomes_a_warning():
-    client = FakeGraphClient(fail={"/users/$count": GraphError("forbidden", status=403)})
+    client = FakeGraphClient(fail={"/users": GraphError("forbidden", status=403)})
     snap = collect(client)
     assert snap["metadata"]["userCount"] is None
-    assert "count" in snap["metadata"]["warnings"][0]
+    assert "count the tenant's users (HTTP 403)" in snap["metadata"]["warnings"][0]
 
 
 def test_missing_pim_access_becomes_a_warning():

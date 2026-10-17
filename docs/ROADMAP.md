@@ -37,10 +37,15 @@ committed.
 - [x] Older snapshots without directory data still run; identity checks show as SKIP
 - [ ] Live run against the lab tenant with `CA_BREAK_GLASS` set
 
-## M4: Report
-- [ ] HTML report: executive summary, severity counts, per-finding detail and fix
-- [ ] Map each finding to Microsoft's CA baseline guidance and MITRE ATT&CK
-- [ ] A KQL hunting query per finding ("has this gap been abused?") for Sentinel / Log Analytics
+## M4: Report ✅
+- [x] HTML report: executive summary, severity counts, per-finding detail and fix
+- [x] Self-contained (no external resources), light and dark mode, phone-friendly, print-friendly
+- [x] All tenant text HTML-escaped (display names are attacker-controllable)
+- [x] Map each finding to MITRE ATT&CK
+- [x] A KQL hunting query per finding ("has this gap been abused?"), pre-filled with the
+      finding's users, policies, or IP ranges
+- [x] `report` command and `collect --report`
+- [ ] Live check that the tenant user count now collects (fixed in this milestone)
 
 ## M5: Portfolio polish
 - [ ] README with a screenshot of the report and a sample-data quickstart

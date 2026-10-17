@@ -127,10 +127,11 @@ def collect_snapshot(client, username: str, tenant_id: str, now: datetime | None
 
     # 6. How many users the tenant has, so exclusions can be judged as a share of everyone
     try:
-        user_count = client.count("/users/$count")
-    except (GraphError, ValueError):
+        user_count = client.count("/users")
+    except (GraphError, KeyError, ValueError) as e:
         user_count = None
-        warnings.append("Couldn't count the tenant's users, so broad-exclusion checks are limited.")
+        status = f" (HTTP {e.status})" if isinstance(e, GraphError) and e.status else ""
+        warnings.append(f"Couldn't count the tenant's users{status}, so broad-exclusion checks are limited.")
 
     # Show the tenant's domain (from ca-auditor@contoso.onmicrosoft.com) rather than a bare GUID.
     tenant = username.split("@", 1)[1] if "@" in username else tenant_id

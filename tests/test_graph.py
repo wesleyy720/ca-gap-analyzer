@@ -79,6 +79,15 @@ def test_get_by_ids_posts_in_chunks(monkeypatch):
     assert session.requests[0]["url"].endswith("/directoryObjects/getByIds")
 
 
+def test_count_uses_json_odata_count_with_consistency_header():
+    session = FakeSession([FakeResponse(body={"@odata.count": 9, "value": [{"id": "a"}]})])
+    assert GraphClient("t", session=session).count("/users") == 9
+    request = session.requests[0]
+    assert request["url"] == BASE_URL + "/users?$count=true&$top=1&$select=id"
+    assert request["headers"]["ConsistencyLevel"] == "eventual"
+    assert request["headers"]["Accept"] == "application/json"
+
+
 def test_errors_carry_status_code():
     session = FakeSession([FakeResponse(400, body={"error": {"message": "bad"}})])
     with pytest.raises(GraphError) as excinfo:
