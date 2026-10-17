@@ -119,9 +119,9 @@ class Policy:
         """
         c = self._conditions
         found = []
-        if c.get("platforms"):
+        if self._limits(c.get("platforms"), "includePlatforms", "excludePlatforms"):
             found.append("device platforms")
-        if c.get("locations"):
+        if self._limits(c.get("locations"), "includeLocations", "excludeLocations"):
             found.append("locations")
         if c.get("signInRiskLevels"):
             found.append("sign-in risk")
@@ -130,6 +130,19 @@ class Policy:
         if c.get("devices"):
             found.append("device filter")
         return found
+
+    @staticmethod
+    def _limits(condition: dict | None, include_key: str, exclude_key: str) -> bool:
+        """Does this platform/location condition actually rule anything out?
+
+        "Any device" (includePlatforms: ["all"]) or "Any location" (includeLocations: ["All"])
+        with nothing excluded is configured, but covers everything.
+        """
+        if not condition:
+            return False
+        include = [v.lower() for v in condition.get(include_key) or []]
+        excluded = condition.get(exclude_key) or []
+        return bool(excluded) or include != ["all"]
 
     # --- Access controls: what happens ---------------------------------------------
 

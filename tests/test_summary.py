@@ -34,6 +34,12 @@ def test_apps_conditions_and_grants():
     assert "Require authentication strength 'Phishing-resistant MFA'" in describe("CA100")
 
 
+def test_any_device_condition_is_not_listed():
+    snapshot = make_snapshot([make_policy(platforms={"includePlatforms": ["all"]})])
+    text = "\n".join(describe_policy(snapshot.policies[0], snapshot))
+    assert "Conditions: none" in text
+
+
 def test_or_and_operators():
     snapshot = make_snapshot([make_policy(grant=["mfa", "compliantDevice"], operator="AND")])
     text = "\n".join(describe_policy(snapshot.policies[0], snapshot))

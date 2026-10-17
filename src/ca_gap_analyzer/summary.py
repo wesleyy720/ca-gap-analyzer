@@ -63,11 +63,15 @@ def _conditions(policy: Policy, snapshot: Snapshot) -> list[str]:
     if c.get("userRiskLevels"):
         out.append("user risk: " + ", ".join(c["userRiskLevels"]))
     platforms = c.get("platforms") or {}
-    if platforms.get("includePlatforms"):
-        out.append("platforms: " + ", ".join(platforms["includePlatforms"]))
+    included = platforms.get("includePlatforms") or []
+    if included and [p.lower() for p in included] != ["all"]:
+        out.append("platforms: " + ", ".join(included))
+    if platforms.get("excludePlatforms"):
+        out.append("except platforms: " + ", ".join(platforms["excludePlatforms"]))
     locations = c.get("locations") or {}
-    if locations.get("includeLocations"):
-        out.append("from: " + ", ".join(_location_name(i, snapshot) for i in locations["includeLocations"]))
+    included = locations.get("includeLocations") or []
+    if included and included != ["All"]:
+        out.append("from: " + ", ".join(_location_name(i, snapshot) for i in included))
     if locations.get("excludeLocations"):
         out.append("except from: " + ", ".join(_location_name(i, snapshot) for i in locations["excludeLocations"]))
     flows = (c.get("authenticationFlows") or {}).get("transferMethods")
