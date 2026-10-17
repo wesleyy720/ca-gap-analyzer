@@ -2,7 +2,8 @@
   "metadata": {
     "tenant": "calab-sample.onmicrosoft.com",
     "collectedAt": "2026-10-17T18:00:00Z",
-    "source": "synthetic sample mirroring docs/SETUP.md (not real tenant data)"
+    "source": "synthetic sample mirroring docs/SETUP.md (not real tenant data)",
+    "warnings": []
   },
   "conditionalAccessPolicies": [
     {
@@ -222,5 +223,48 @@
         }
       ]
     }
+  ],
+  "roleDefinitions": [
+    { "id": "62e90394-69f5-4237-9190-012177145e10", "displayName": "Global Administrator", "templateId": "62e90394-69f5-4237-9190-012177145e10", "isBuiltIn": true },
+    { "id": "e8611ab8-c189-46e8-94e1-60213ab1f814", "displayName": "Privileged Role Administrator", "templateId": "e8611ab8-c189-46e8-94e1-60213ab1f814", "isBuiltIn": true },
+    { "id": "729827e3-9c14-49f7-bb1b-9608f156bbb8", "displayName": "Helpdesk Administrator", "templateId": "729827e3-9c14-49f7-bb1b-9608f156bbb8", "isBuiltIn": true },
+    { "id": "29232cdf-9323-42fd-ade2-1d097af3e4de", "displayName": "Exchange Administrator", "templateId": "29232cdf-9323-42fd-ade2-1d097af3e4de", "isBuiltIn": true },
+    { "id": "f2ef992c-3afb-46b9-b7cf-a126ee74c451", "displayName": "Global Reader", "templateId": "f2ef992c-3afb-46b9-b7cf-a126ee74c451", "isBuiltIn": true }
+  ],
+  "roleAssignments": [
+    { "id": "ra-01", "principalId": "aaaaaaaa-0000-4000-8000-000000000098", "roleDefinitionId": "62e90394-69f5-4237-9190-012177145e10", "directoryScopeId": "/" },
+    { "id": "ra-02", "principalId": "aaaaaaaa-0000-4000-8000-000000000099", "roleDefinitionId": "62e90394-69f5-4237-9190-012177145e10", "directoryScopeId": "/" },
+    { "id": "ra-03", "principalId": "aaaaaaaa-0000-4000-8000-000000000003", "roleDefinitionId": "e8611ab8-c189-46e8-94e1-60213ab1f814", "directoryScopeId": "/" },
+    { "id": "ra-04", "principalId": "aaaaaaaa-0000-4000-8000-000000000002", "roleDefinitionId": "729827e3-9c14-49f7-bb1b-9608f156bbb8", "directoryScopeId": "/" },
+    { "id": "ra-05", "principalId": "aaaaaaaa-0000-4000-8000-000000000005", "roleDefinitionId": "29232cdf-9323-42fd-ade2-1d097af3e4de", "directoryScopeId": "/" },
+    { "id": "ra-06", "principalId": "aaaaaaaa-0000-4000-8000-000000000007", "roleDefinitionId": "f2ef992c-3afb-46b9-b7cf-a126ee74c451", "directoryScopeId": "/" }
+  ],
+  "roleEligibilities": [],
+  "groupMembers": {
+    "99999999-0000-4000-8000-000000000001": [
+      "aaaaaaaa-0000-4000-8000-000000000001",
+      "aaaaaaaa-0000-4000-8000-000000000002",
+      "aaaaaaaa-0000-4000-8000-000000000003",
+      "aaaaaaaa-0000-4000-8000-000000000004",
+      "aaaaaaaa-0000-4000-8000-000000000005"
+    ],
+    "99999999-0000-4000-8000-000000000002": [
+      "aaaaaaaa-0000-4000-8000-000000000003",
+      "aaaaaaaa-0000-4000-8000-000000000006"
+    ]
+  },
+  "directoryObjects": [
+    { "@odata.type": "#microsoft.graph.user", "id": "aaaaaaaa-0000-4000-8000-000000000001", "displayName": "Alice Anders", "userPrincipalName": "alice@calab-sample.onmicrosoft.com", "userType": "Member", "accountEnabled": true },
+    { "@odata.type": "#microsoft.graph.user", "id": "aaaaaaaa-0000-4000-8000-000000000002", "displayName": "Bob Brooks", "userPrincipalName": "bob@calab-sample.onmicrosoft.com", "userType": "Member", "accountEnabled": true },
+    { "@odata.type": "#microsoft.graph.user", "id": "aaaaaaaa-0000-4000-8000-000000000003", "displayName": "Carol Chen", "userPrincipalName": "carol@calab-sample.onmicrosoft.com", "userType": "Member", "accountEnabled": true },
+    { "@odata.type": "#microsoft.graph.user", "id": "aaaaaaaa-0000-4000-8000-000000000004", "displayName": "Dave Diaz", "userPrincipalName": "dave@calab-sample.onmicrosoft.com", "userType": "Member", "accountEnabled": true },
+    { "@odata.type": "#microsoft.graph.user", "id": "aaaaaaaa-0000-4000-8000-000000000005", "displayName": "Erin Evans", "userPrincipalName": "erin@calab-sample.onmicrosoft.com", "userType": "Member", "accountEnabled": true },
+    { "@odata.type": "#microsoft.graph.user", "id": "aaaaaaaa-0000-4000-8000-000000000006", "displayName": "Legacy Scanner Service", "userPrincipalName": "svc-legacy-scanner@calab-sample.onmicrosoft.com", "userType": "Member", "accountEnabled": true },
+    { "@odata.type": "#microsoft.graph.user", "id": "aaaaaaaa-0000-4000-8000-000000000007", "displayName": "CA Auditor (tool)", "userPrincipalName": "ca-auditor@calab-sample.onmicrosoft.com", "userType": "Member", "accountEnabled": true },
+    { "@odata.type": "#microsoft.graph.user", "id": "aaaaaaaa-0000-4000-8000-000000000098", "displayName": "Lab Admin", "userPrincipalName": "labadmin@calab-sample.onmicrosoft.com", "userType": "Member", "accountEnabled": true },
+    { "@odata.type": "#microsoft.graph.user", "id": "aaaaaaaa-0000-4000-8000-000000000099", "displayName": "Break Glass 01", "userPrincipalName": "breakglass01@calab-sample.onmicrosoft.com", "userType": "Member", "accountEnabled": true },
+    { "@odata.type": "#microsoft.graph.group", "id": "99999999-0000-4000-8000-000000000001", "displayName": "All-Staff", "securityEnabled": true, "isAssignableToRole": false },
+    { "@odata.type": "#microsoft.graph.group", "id": "99999999-0000-4000-8000-000000000002", "displayName": "CA-Exclusions-Temp", "securityEnabled": true, "isAssignableToRole": false },
+    { "@odata.type": "#microsoft.graph.servicePrincipal", "id": "33333333-0000-4000-8000-000000000001", "appId": "00000003-0000-0ff1-ce00-000000000000", "displayName": "Office 365 SharePoint Online" }
   ]
 }

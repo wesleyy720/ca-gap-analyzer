@@ -2,7 +2,10 @@ from ca_gap_analyzer.auth import SCOPES, explain
 
 
 def test_requests_only_read_scopes():
-    assert all(scope.endswith(".Read.All") for scope in SCOPES)
+    assert SCOPES
+    for scope in SCOPES:
+        permission = scope.rsplit("/", 1)[1]
+        assert ".Read." in permission and "Write" not in permission
 
 
 def test_known_error_gets_a_fix():

@@ -25,7 +25,14 @@ py -3.12 -m venv .venv
 .\.venv\Scripts\ca-gap-analyzer.exe analyze samples\lab_snapshot.json
 ```
 
-Add `--format json` for machine-readable output. Run the tests with
+Add `--format json` for machine-readable output. To read each policy in plain English (who it
+really covers, with exclusion groups expanded to their members):
+
+```powershell
+.\.venv\Scripts\ca-gap-analyzer.exe policies samples\lab_snapshot.json
+```
+
+Run the tests with
 `.\.venv\Scripts\python.exe -m pytest`.
 
 ## Analyze a live tenant

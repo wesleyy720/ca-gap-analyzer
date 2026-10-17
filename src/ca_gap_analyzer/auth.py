@@ -13,9 +13,12 @@ import msal
 
 GRAPH = "https://graph.microsoft.com/"
 
-# Only what the collector reads today: CA policies and named locations. Least privilege means
-# adding scopes only when a feature needs them.
-SCOPES = [GRAPH + "Policy.Read.All"]
+# Only what the collector reads. Least privilege means adding scopes only when a feature needs them.
+SCOPES = [
+    GRAPH + "Policy.Read.All",                 # CA policies and named locations
+    GRAPH + "Directory.Read.All",              # names of users, groups, apps; group memberships
+    GRAPH + "RoleManagement.Read.Directory",   # who holds which admin role (active and PIM eligible)
+]
 
 
 class AuthError(Exception):

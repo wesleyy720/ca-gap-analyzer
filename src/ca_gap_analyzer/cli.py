@@ -3,6 +3,7 @@
 Usage:
     ca-gap-analyzer analyze samples/lab_snapshot.json
     ca-gap-analyzer analyze samples/lab_snapshot.json --format json
+    ca-gap-analyzer policies samples/lab_snapshot.json   # each policy in plain English
     ca-gap-analyzer collect                 # sign in, save a snapshot to exports/
     ca-gap-analyzer collect --analyze       # ...and analyze it straight away
 """
@@ -19,6 +20,7 @@ from .checks import ALL_CHECKS
 from .config import ConfigError, load_settings
 from .findings import Finding, Severity
 from .snapshot import Snapshot, load_snapshot, snapshot_from_dict
+from .summary import print_policy_summary
 
 WIDTH = 100
 
@@ -43,6 +45,14 @@ def print_text_report(snapshot: Snapshot, source: Path, results: list[CheckResul
     print(f"Snapshot: {source}")
     print(f"Tenant:   {snapshot.tenant}   (collected {snapshot.collected_at:%Y-%m-%d %H:%M} UTC)")
     print(f"Policies: {len(snapshot.policies)}   Named locations: {len(snapshot.named_locations)}")
+    d = snapshot.directory
+    if d.is_empty:
+        print("Directory: not collected (older snapshot), so identity checks have less to go on")
+    else:
+        print(f"Directory: {len(d.objects)} users/groups/apps resolved, "
+              f"{len(d.role_assignments)} active and {len(d.role_eligibilities)} eligible role assignments")
+    for warning in snapshot.warnings:
+        print(f"Warning:  {warning}")
 
     print("\nChecks")
     for r in results:
@@ -103,6 +113,9 @@ def main(argv: list[str] | None = None) -> int:
     analyze.add_argument("snapshot", type=Path, help="path to a snapshot JSON file")
     analyze.add_argument("--format", choices=["text", "json"], default="text", help="output format")
 
+    policies_cmd = commands.add_parser("policies", help="describe each policy in plain English")
+    policies_cmd.add_argument("snapshot", type=Path, help="path to a snapshot JSON file")
+
     collect_cmd = commands.add_parser("collect", help="sign in and save a snapshot of a live tenant")
     collect_cmd.add_argument("--output", type=Path, help="where to save (default: exports/snapshot-<time>.json)")
     collect_cmd.add_argument("--env-file", type=Path, default=Path(".env"), help="settings file (default: .env)")
@@ -111,17 +124,33 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.command == "collect":
         return run_collect(args)
+    if args.command == "policies":
+        return run_policies(args)
     return run_analyze(args)
 
 
-def run_analyze(args) -> int:
+def open_snapshot(path: Path) -> Snapshot | None:
+    """Load a snapshot, printing a friendly error (and returning None) if it can't be read."""
     try:
-        snapshot = load_snapshot(args.snapshot)
+        return load_snapshot(path)
     except FileNotFoundError:
-        print(f"error: snapshot file not found: {args.snapshot}", file=sys.stderr)
-        return 2
+        print(f"error: snapshot file not found: {path}", file=sys.stderr)
     except json.JSONDecodeError as e:
-        print(f"error: {args.snapshot} is not valid JSON ({e})", file=sys.stderr)
+        print(f"error: {path} is not valid JSON ({e})", file=sys.stderr)
+    return None
+
+
+def run_policies(args) -> int:
+    snapshot = open_snapshot(args.snapshot)
+    if snapshot is None:
+        return 2
+    print_policy_summary(snapshot)
+    return 0
+
+
+def run_analyze(args) -> int:
+    snapshot = open_snapshot(args.snapshot)
+    if snapshot is None:
         return 2
 
     results = run_checks(snapshot)

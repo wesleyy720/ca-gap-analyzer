@@ -24,7 +24,11 @@ class FakeSession:
         self.requests = []
 
     def get(self, url, headers=None, timeout=None):
-        self.requests.append({"url": url, "headers": headers})
+        self.requests.append({"method": "GET", "url": url, "headers": headers})
+        return self.responses.pop(0)
+
+    def post(self, url, headers=None, json=None, timeout=None):
+        self.requests.append({"method": "POST", "url": url, "headers": headers, "json": json})
         return self.responses.pop(0)
 
 
@@ -63,6 +67,25 @@ def test_gives_up_after_max_retries():
         GraphClient("t", session=session, sleep=lambda s: None, max_retries=2).get_all("/things")
 
 
+def test_get_by_ids_posts_in_chunks(monkeypatch):
+    monkeypatch.setattr("ca_gap_analyzer.graph.GET_BY_IDS_LIMIT", 2)
+    session = FakeSession([
+        FakeResponse(body={"value": [{"id": "a"}, {"id": "b"}]}),
+        FakeResponse(body={"value": [{"id": "c"}]}),
+    ])
+    found = GraphClient("t", session=session).get_by_ids(["a", "b", "c"], ["user"])
+    assert [o["id"] for o in found] == ["a", "b", "c"]
+    assert [r["json"]["ids"] for r in session.requests] == [["a", "b"], ["c"]]
+    assert session.requests[0]["url"].endswith("/directoryObjects/getByIds")
+
+
+def test_errors_carry_status_code():
+    session = FakeSession([FakeResponse(400, body={"error": {"message": "bad"}})])
+    with pytest.raises(GraphError) as excinfo:
+        GraphClient("t", session=session).get_all("/things")
+    assert excinfo.value.status == 400
+
+
 def test_403_explains_permissions():
     body = {"error": {"code": "Authorization_RequestDenied", "message": "Insufficient privileges"}}
     session = FakeSession([FakeResponse(403, body=body)])
@@ -70,4 +93,4 @@ def test_403_explains_permissions():
         GraphClient("t", session=session).get_all("/things")
     message = str(excinfo.value)
     assert "Insufficient privileges" in message
-    assert "Policy.Read.All" in message
+    assert "admin consent" in message

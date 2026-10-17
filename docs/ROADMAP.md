@@ -23,9 +23,16 @@ committed.
 - Roles and groups move to M3, which needs them (and their extra read scopes) for enrichment
 
 ## M3: Identity enrichment
-- [ ] Resolve GUIDs to names (users, groups, roles, apps)
-- [ ] Expand exclusion groups to find privileged users hiding in them (CA-02, CA-04)
-- [ ] Remaining checks from the catalog
+**Part A: collect and resolve identities**
+- [x] Collect role definitions, active role assignments, and PIM eligible assignments
+- [x] Resolve GUIDs to names (users, groups, roles, apps), for referenced objects only
+- [x] Expand referenced groups to their transitive (nested) members
+- [x] `policies` command: each policy in plain English, exclusion groups shown with members
+- [ ] Live run against the lab tenant
+
+**Part B: identity checks**
+- [ ] CA-02 (admins without phishing-resistant MFA), CA-04 (privileged users excluded), CA-05 (broad exclusions)
+- [ ] CA-10, CA-11, CA-12, and the remaining catalog checks
 
 ## M4: Report
 - [ ] HTML report: executive summary, severity counts, per-finding detail and fix

@@ -4,6 +4,8 @@ Handles the two things every Graph caller has to deal with:
   * Paging: Graph returns results in pages and puts the next page's URL in "@odata.nextLink".
   * Throttling: Graph answers 429 "Too Many Requests" with a Retry-After header saying how
     many seconds to wait.
+
+The one POST it makes (directoryObjects/getByIds) is a read: it looks up many objects at once.
 """
 
 import time
@@ -12,10 +14,13 @@ import requests
 
 BASE_URL = "https://graph.microsoft.com/v1.0"
 RETRY_STATUSES = {429, 503, 504}
+GET_BY_IDS_LIMIT = 1000  # Graph's maximum IDs per getByIds call
 
 
 class GraphError(Exception):
-    pass
+    def __init__(self, message: str, status: int | None = None):
+        super().__init__(message)
+        self.status = status
 
 
 def describe_error(response, url: str) -> str:
@@ -28,8 +33,8 @@ def describe_error(response, url: str) -> str:
     if response.status_code == 403:
         text += (
             "\nThe app or the signed-in account isn't allowed to read this. Check that admin "
-            "consent was granted for Policy.Read.All, and that you signed in as an account with "
-            "Global Reader or Security Reader (ca-auditor)."
+            "consent was granted for the app's API permissions, and that you signed in as an "
+            "account with Global Reader or Security Reader (ca-auditor)."
         )
     elif response.status_code == 401:
         text += "\nThe sign-in token was rejected. Try running the command again."
@@ -48,20 +53,32 @@ class GraphClient:
         url = BASE_URL + path
         items = []
         while url:
-            data = self._get(url)
+            data = self._request("GET", url)
             items.extend(data.get("value", []))
             url = data.get("@odata.nextLink")
         return items
 
-    def _get(self, url: str) -> dict:
+    def get_by_ids(self, ids: list[str], types: list[str]) -> list[dict]:
+        """Look up many directory objects (users, groups, service principals) by ID."""
+        found = []
+        for start in range(0, len(ids), GET_BY_IDS_LIMIT):
+            body = {"ids": ids[start:start + GET_BY_IDS_LIMIT], "types": types}
+            data = self._request("POST", BASE_URL + "/directoryObjects/getByIds", body)
+            found.extend(data.get("value", []))
+        return found
+
+    def _request(self, method: str, url: str, body: dict | None = None) -> dict:
         for attempt in range(self._max_retries + 1):
-            response = self._session.get(url, headers=self._headers, timeout=30)
+            if method == "POST":
+                response = self._session.post(url, headers=self._headers, json=body, timeout=30)
+            else:
+                response = self._session.get(url, headers=self._headers, timeout=30)
 
             if response.status_code in RETRY_STATUSES and attempt < self._max_retries:
                 self._sleep(self._retry_delay(response, attempt))
                 continue
             if response.status_code >= 400:
-                raise GraphError(describe_error(response, url))
+                raise GraphError(describe_error(response, url), status=response.status_code)
             return response.json()
 
         raise GraphError(f"Gave up on {url} after {self._max_retries} retries")  # pragma: no cover

@@ -66,12 +66,20 @@ class Policy:
         return self._users.get("excludeUsers") or []
 
     @property
+    def include_groups(self) -> list[str]:
+        return self._users.get("includeGroups") or []
+
+    @property
     def exclude_groups(self) -> list[str]:
         return self._users.get("excludeGroups") or []
 
     @property
     def include_roles(self) -> list[str]:
         return self._users.get("includeRoles") or []
+
+    @property
+    def exclude_roles(self) -> list[str]:
+        return self._users.get("excludeRoles") or []
 
     @property
     def targets_all_users(self) -> bool:
@@ -81,6 +89,11 @@ class Policy:
     def include_applications(self) -> list[str]:
         apps = self._conditions.get("applications") or {}
         return apps.get("includeApplications") or []
+
+    @property
+    def exclude_applications(self) -> list[str]:
+        apps = self._conditions.get("applications") or {}
+        return apps.get("excludeApplications") or []
 
     @property
     def targets_all_apps(self) -> bool:
