@@ -48,9 +48,15 @@ committed.
 - [ ] Live check that the tenant user count now collects (fixed in this milestone)
 
 ## M5: Portfolio polish
-- [ ] README with a screenshot of the report and a sample-data quickstart
-- [ ] GitHub Actions CI (tests and lint) with a badge
+- [x] README with a screenshot of the report and a sample-data quickstart
+- [x] GitHub Actions CI (tests and lint on Linux and Windows) with a badge
+- [x] MIT license and project metadata
 - [ ] Short write-up: "What I found reviewing Conditional Access gaps" (blog or LinkedIn post)
+
+## Ideas for later
+- Scheduled scan from GitHub Actions using workload identity federation (no stored secrets)
+- `diff` command: what changed between two snapshots (new exclusions, policies switched off)
+- Suggested remediation commands (Microsoft Graph PowerShell) per finding, never auto-applied
 
 ## Resume bullet (once M4 is done)
 > Designed and built a Python tool that audits Microsoft Entra ID Conditional Access via
